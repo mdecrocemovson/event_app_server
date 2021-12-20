@@ -21,14 +21,14 @@ model User {
 }
 
 model Event {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   userId      String
-  user        User   @relation(fields: [userId], references: [id])
+  user        User    @relation(fields: [userId], references: [id])
   location    String
   title       String
-  length      Int
+  startDate   String
+  endDate     String
   description String
-  coverPhoto  String
-  date        String
+  coverPhoto  String?
   privacy     String
 }

@@ -15,13 +15,11 @@ export const resolvers = {
       });
     },
     userByEmail: async (_, args, ctx) => {
-      console.log(args);
       const user = await prisma.user.findUnique({
         where: {
           email: args.email,
         },
       });
-      console.log(user, "user in user by email");
       return user;
     },
   },
@@ -32,21 +30,31 @@ export const resolvers = {
         coverPhoto,
         location,
         description,
-        date,
+        startDate,
+        endDate,
         privacy,
         userId,
       } = input;
-      return await prisma.event.create({
-        data: {
-          title,
-          userId,
-          coverPhoto,
-          location,
-          description,
-          date,
-          privacy,
-        },
-      });
+      try {
+        return await prisma.event.create({
+          data: {
+            title,
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
+            coverPhoto,
+            location,
+            description,
+            startDate,
+            endDate,
+            privacy,
+          },
+        });
+      } catch (err) {
+        console.log("error in create event", err);
+      }
     },
     createUser: async (_, { input }, ctx) => {
       const { email, firstName, lastName, location, idealPlans } = input;
@@ -60,7 +68,6 @@ export const resolvers = {
           location,
         },
       });
-      console.log(user);
       return user;
     },
     editEvent: async (_, { input }, ctx) => {
@@ -69,24 +76,30 @@ export const resolvers = {
         coverPhoto,
         location,
         description,
-        date,
+        startDate,
+        endDate,
         privacy,
         eventId,
       } = input;
-      const event = await prisma.event.update({
-        where: {
-          id: eventId,
-        },
-        data: {
-          title,
-          coverPhoto,
-          location,
-          description,
-          date,
-          privacy,
-        },
-      });
-      return event;
+      try {
+        const event = await prisma.event.update({
+          where: {
+            id: eventId,
+          },
+          data: {
+            title,
+            coverPhoto,
+            location,
+            description,
+            startDate,
+            endDate,
+            privacy,
+          },
+        });
+        return event;
+      } catch (err) {
+        console.log(err, "error in editing event");
+      }
     },
   },
 };

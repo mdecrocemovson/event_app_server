@@ -25,7 +25,8 @@ export const typeDefs = gql`
     location: String
     description: String
     coverPhoto: String
-    date: String
+    startDate: String
+    endDate: String
     title: String
     privacy: String
   }
@@ -34,7 +35,8 @@ export const typeDefs = gql`
     location: String
     description: String
     coverPhoto: String
-    date: String
+    startDate: String
+    endDate: String
     title: String
     privacy: String
   }
@@ -50,9 +52,12 @@ export const typeDefs = gql`
     id: String
     title: String
     location: String
+    length: String
     description: String
     coverPhoto: String
-    date: String
+    startDate: String
+    userId: String
+    endDate: String
     privacy: String
   }
 
