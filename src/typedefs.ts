@@ -57,6 +57,7 @@ export const typeDefs = gql`
     coverPhoto: String
     startDate: String
     userId: String
+    user: User
     endDate: String
     privacy: String
   }

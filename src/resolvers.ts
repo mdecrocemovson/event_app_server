@@ -12,6 +12,9 @@ export const resolvers = {
         where: {
           userId: args.iduser,
         },
+        include: {
+          user: true,
+        },
       });
     },
     userByEmail: async (_, args, ctx) => {
