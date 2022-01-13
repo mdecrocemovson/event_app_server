@@ -11,19 +11,44 @@ generator client {
 }
 
 model User {
-  id         String  @id @default(cuid())
-  email      String  @unique
-  firstName  String
-  lastName   String
-  location   String
-  idealPlans String
-  Event      Event[]
+  id                     String          @id @default(cuid())
+  email                  String          @unique
+  firstName              String
+  lastName               String
+  location               String
+  idealPlans             String
+  Event                  Event[]
+  Response               Response[]
+  FriendRequestRequestor FriendRequest[] @relation("FriendRequestRequestor")
+  FriendRequestReceiver  FriendRequest[] @relation("FriendRequestReceiver")
+
+  EventInviteInviter EventInvite[] @relation("EventInviteInviter")
+  EventInviteInvitee EventInvite[] @relation("EventInviteInvitee")
+  friendships        Friendship[]
+}
+
+model Friendship {
+  id            String   @id @default(cuid())
+  friends       User[]
+  createdAt     DateTime @default(now())
+  mutualFriends Int      @default(1)
+
+}
+
+model FriendRequest {
+  id          String   @id @default(cuid())
+  status      String
+  requestDate DateTime @default(now())
+  requestorId String
+  requestor   User     @relation("FriendRequestRequestor", fields: [requestorId], references: [id])
+  receiverId  String
+  receiver    User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
 }
 
 model Event {
-  id          String  @id @default(cuid())
+  id          String        @id @default(cuid())
   userId      String
-  user        User    @relation(fields: [userId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
   location    String
   title       String
   startDate   String
@@ -31,4 +56,27 @@ model Event {
   description String
   coverPhoto  String?
   privacy     String
+  responses   Response[]
+  EventInvite EventInvite[]
+  createdOn   DateTime      @default(now())
+}
+
+model Response {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  eventId  String
+  event    Event  @relation(fields: [eventId], references: [id])
+  response Int
+}
+
+model EventInvite {
+  id        String   @id @default(cuid())
+  inviterId String
+  inviter   User     @relation("EventInviteInviter", fields: [inviterId], references: [id])
+  inviteeId String
+  invitee   User     @relation("EventInviteInvitee", fields: [inviteeId], references: [id])
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  createdOn DateTime @default(now())
 }
