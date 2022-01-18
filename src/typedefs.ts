@@ -28,11 +28,24 @@ export const typeDefs = gql`
     privacy: String
   }
   input CreateUserInput {
+    coverPhoto: String
+    profilePhoto: String
     email: String
     firstName: String
     lastName: String
     location: String
     idealPlans: String
+  }
+
+  input UpdateUserInput {
+    id: String!
+    email: String
+    firstName: String
+    lastName: String
+    location: String
+    idealPlans: String
+    profilePhoto: String
+    coverPhoto: String
   }
   input FriendRequestInput {
     activeUserId: String
@@ -74,6 +87,8 @@ export const typeDefs = gql`
     lastName: String
     location: String
     idealPlans: String
+    profilePhoto: String
+    coverPhoto: String
   }
 
   type Response {
@@ -132,5 +147,6 @@ export const typeDefs = gql`
     addFriend(input: FriendRequestInput): FriendRequest
     inviteFriendToEvent(input: FriendInviteInput): EventInvite
     respondToEventInvite(input: RespondToEventInviteInput!): EventInvite
+    updateUser(input: UpdateUserInput): User
   }
 `;

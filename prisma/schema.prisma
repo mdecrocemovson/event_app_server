@@ -19,6 +19,8 @@ model User {
   idealPlans             String
   Event                  Event[]
   Response               Response[]
+  coverPhoto             String?
+  profilePhoto           String?
   FriendRequestRequestor FriendRequest[] @relation("FriendRequestRequestor")
   FriendRequestReceiver  FriendRequest[] @relation("FriendRequestReceiver")
 

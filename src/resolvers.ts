@@ -8,6 +8,11 @@ import { Prisma } from "@prisma/client";
 // import { fetchMutualFriends } from "./friendUtils";
 import { responses } from "./utils";
 import { calculateMutualFriends } from "./friendUtils";
+const AWS = require("aws-sdk");
+
+import Amplify, { Storage } from "aws-amplify";
+import awsconfig from "../src/aws-exports";
+Amplify.configure(awsconfig);
 
 export const resolvers = {
   Query: {
@@ -198,18 +203,32 @@ export const resolvers = {
       }
     },
     createUser: async (_, { input }, ctx) => {
-      const { email, firstName, lastName, location, idealPlans } = input;
+      const {
+        email,
+        firstName,
+        lastName,
+        location,
+        idealPlans,
+        profilePhoto,
+        coverPhoto,
+      } = input;
 
-      const user = await prisma.user.create({
-        data: {
-          email,
-          firstName,
-          lastName,
-          idealPlans,
-          location,
-        },
-      });
-      return user;
+      try {
+        const user = await prisma.user.create({
+          data: {
+            email,
+            firstName,
+            lastName,
+            idealPlans,
+            location,
+            profilePhoto,
+            coverPhoto,
+          },
+        });
+        return user;
+      } catch (err) {
+        console.log(err, "error creating user");
+      }
     },
     editEvent: async (_, { input }, ctx) => {
       const {
@@ -402,6 +421,29 @@ export const resolvers = {
       }
 
       // create a response that says they are going
+    },
+
+    updateUser: async (_, { input }, ctx) => {
+      const {
+        id,
+        email,
+        firstName,
+        lastName,
+        location,
+        idealPlans,
+        profilePhoto,
+        coverPhoto,
+      } = input;
+      console.log(input, "input");
+
+      const user = await prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          ...input,
+        },
+      });
     },
   },
 

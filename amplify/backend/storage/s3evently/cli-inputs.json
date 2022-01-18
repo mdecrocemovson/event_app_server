@@ -1,0 +1,18 @@
+{
+  "resourceName": "s3evently",
+  "policyUUID": "af99d4a1",
+  "bucketName": "eventlystoragebucketname",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}
