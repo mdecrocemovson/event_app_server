@@ -6,12 +6,14 @@ const { ApolloServer, gql } = require("apollo-server");
 export const typeDefs = gql`
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
+  scalar Upload
+
   input CreateEventInput {
     id: String
     userId: String
     location: String
     description: String
-    coverPhoto: String
+    coverPhoto: Upload
     startDate: String
     endDate: String
     title: String
@@ -64,6 +66,19 @@ export const typeDefs = gql`
     response: Int
   }
 
+  input AddCommentInput {
+    eventId: String!
+    content: String
+    imageUrl: String
+    userId: String
+  }
+
+  input ProfilePictureUploadInput {
+    id: String!
+    file: Upload!
+    isCover: Boolean
+  }
+
   type Event {
     id: String
     title: String
@@ -78,6 +93,16 @@ export const typeDefs = gql`
     privacy: String
     responses: [Response]
     createdOn: String
+    comments: [Comment]
+  }
+
+  type Comment {
+    id: String
+    event: Event
+    user: User
+    content: String
+    imageUrl: String
+    createdOn: String
   }
 
   type User {
@@ -89,6 +114,7 @@ export const typeDefs = gql`
     idealPlans: String
     profilePhoto: String
     coverPhoto: String
+    comments: [Comment]
   }
 
   type Response {
@@ -137,6 +163,7 @@ export const typeDefs = gql`
     friendRequestsByUserId(activeUserId: String): [FriendRequest]
     friendshipsByUserId(userId: String): [Friendship]
     eventInvitesByInviteeId(userId: String): [EventInvite]
+    eventById(eventId: String): Event
   }
 
   type Mutation {
@@ -148,5 +175,7 @@ export const typeDefs = gql`
     inviteFriendToEvent(input: FriendInviteInput): EventInvite
     respondToEventInvite(input: RespondToEventInviteInput!): EventInvite
     updateUser(input: UpdateUserInput): User
+    addComment(input: AddCommentInput): Comment
+    uploadUserPhoto(input: ProfilePictureUploadInput!): User
   }
 `;

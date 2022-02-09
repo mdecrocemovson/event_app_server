@@ -19,14 +19,15 @@ model User {
   idealPlans             String
   Event                  Event[]
   Response               Response[]
-  coverPhoto             String?
-  profilePhoto           String?
+  coverPhotoKey          String?
+  profilePhotoKey        String?
   FriendRequestRequestor FriendRequest[] @relation("FriendRequestRequestor")
   FriendRequestReceiver  FriendRequest[] @relation("FriendRequestReceiver")
 
   EventInviteInviter EventInvite[] @relation("EventInviteInviter")
   EventInviteInvitee EventInvite[] @relation("EventInviteInvitee")
   friendships        Friendship[]
+  comments           Comment[]
 }
 
 model Friendship {
@@ -61,6 +62,7 @@ model Event {
   responses   Response[]
   EventInvite EventInvite[]
   createdOn   DateTime      @default(now())
+  comments    Comment[]
 }
 
 model Response {
@@ -81,4 +83,15 @@ model EventInvite {
   eventId   String
   event     Event    @relation(fields: [eventId], references: [id])
   createdOn DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  createdOn DateTime @default(now())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  content   String
+  imageUrl  String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }
