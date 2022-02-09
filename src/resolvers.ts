@@ -3,16 +3,21 @@
 
 import moment from "moment";
 import prisma from "../prisma/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, Response } from "@prisma/client";
 
 // import { fetchMutualFriends } from "./friendUtils";
 import { responses } from "./utils";
 import { calculateMutualFriends } from "./friendUtils";
-const AWS = require("aws-sdk");
+import { Buffer } from "buffer";
+// import { fileTypeFromBuffer } from "file-type";
 
-import Amplify, { Storage } from "aws-amplify";
-import awsconfig from "../src/aws-exports";
-Amplify.configure(awsconfig);
+import {
+  generatePresignedUrl,
+  populateCoverPhotoForEvent,
+  populateProfilePictureForUser,
+  saveUserEventPhoto,
+  saveUserPhoto,
+} from "./imageUtils";
 
 export const resolvers = {
   Query: {
@@ -23,6 +28,12 @@ export const resolvers = {
         },
         include: {
           user: true,
+          comments: {
+            include: {
+              user: true,
+            },
+          },
+
           responses: {
             include: {
               user: true,
@@ -35,11 +46,15 @@ export const resolvers = {
       const responses = await prisma.response.findMany({
         where: {
           userId: args.iduser,
-          // response: responses.GOING,
         },
         include: {
           event: {
             include: {
+              comments: {
+                include: {
+                  user: true,
+                },
+              },
               user: true,
               responses: {
                 include: {
@@ -57,10 +72,40 @@ export const resolvers = {
           if (r.event.userId !== args.iduser) return r.event;
         })
         .map((r) => r.event);
-      console.log(eventsFromResponses);
 
       const allEvents = hostedEvents.concat(eventsFromResponses).flat();
-      return allEvents;
+      const eventsWithCoverPhotos = await Promise.all(
+        allEvents.map((e) => {
+          console.log(e.coverPhoto, "cover photo");
+          if (e.coverPhoto) return populateCoverPhotoForEvent(e);
+          return e;
+        })
+      );
+      return eventsWithCoverPhotos;
+    },
+
+    eventById: async (_, args, ctx) => {
+      const event = await prisma.event.findUnique({
+        where: {
+          id: args.eventId,
+        },
+        include: {
+          user: true,
+          comments: {
+            include: {
+              user: true,
+            },
+          },
+
+          responses: {
+            include: {
+              user: true,
+              event: true,
+            },
+          },
+        },
+      });
+      return populateCoverPhotoForEvent(event);
     },
     userByEmail: async (_, args, ctx) => {
       const user = await prisma.user.findUnique({
@@ -68,7 +113,8 @@ export const resolvers = {
           email: args.email,
         },
       });
-      return user;
+
+      return populateProfilePictureForUser(user);
     },
     responsesByEventId: async (_, args, ctx) => {
       console.log(args, "args");
@@ -163,6 +209,7 @@ export const resolvers = {
         privacy,
         userId,
       } = input;
+
       try {
         const event = await prisma.event.create({
           data: {
@@ -172,7 +219,6 @@ export const resolvers = {
                 id: userId,
               },
             },
-            coverPhoto,
             location,
             description,
             startDate,
@@ -180,7 +226,16 @@ export const resolvers = {
             privacy,
           },
         });
-        console.log(event, "created event");
+
+        const eventPhotos3Key = await saveUserEventPhoto(event.id, coverPhoto);
+        await prisma.event.update({
+          where: {
+            id: event.id,
+          },
+          data: {
+            coverPhoto: eventPhotos3Key,
+          },
+        });
 
         await prisma.response.create({
           data: {
@@ -197,7 +252,12 @@ export const resolvers = {
             response: responses.GOING,
           },
         });
-        return event;
+        console.log("got here?");
+        return await prisma.event.findFirst({
+          where: {
+            id: event.id,
+          },
+        });
       } catch (err) {
         console.log("error in create event", err);
       }
@@ -209,8 +269,8 @@ export const resolvers = {
         lastName,
         location,
         idealPlans,
-        profilePhoto,
-        coverPhoto,
+        profilePhotoKey,
+        coverPhotoKey,
       } = input;
 
       try {
@@ -221,8 +281,8 @@ export const resolvers = {
             lastName,
             idealPlans,
             location,
-            profilePhoto,
-            coverPhoto,
+            profilePhotoKey,
+            coverPhotoKey,
           },
         });
         return user;
@@ -242,6 +302,7 @@ export const resolvers = {
         eventId,
       } = input;
       console.log(input, "input");
+      const newKey = await saveUserEventPhoto(eventId, coverPhoto);
       try {
         const event = await prisma.event.update({
           where: {
@@ -249,7 +310,7 @@ export const resolvers = {
           },
           data: {
             title,
-            coverPhoto,
+            coverPhoto: newKey,
             location,
             description,
             startDate,
@@ -444,6 +505,39 @@ export const resolvers = {
           ...input,
         },
       });
+    },
+
+    addComment: async (_, { input }, ctx) => {
+      try {
+        const comment = await prisma.comment.create({
+          data: {
+            user: {
+              connect: {
+                id: input.userId,
+              },
+            },
+            content: input.content,
+            event: {
+              connect: {
+                id: input.eventId,
+              },
+            },
+          },
+        });
+        return comment;
+      } catch (err) {
+        console.log(err, "error adding comment");
+      }
+    },
+    uploadUserPhoto: async (_, { input }, ctx) => {
+      try {
+        const { file, id, isCover } = input;
+        const whatisreturned = await saveUserPhoto(id, file.uri, isCover);
+        console.log(whatisreturned, "WHAT IS RETURNED");
+        return whatisreturned;
+      } catch (err) {
+        console.log(err, "error uploadiong prof pic");
+      }
     },
   },
 
