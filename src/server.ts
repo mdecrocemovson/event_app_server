@@ -8,12 +8,15 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   plugins: [myPlugin],
+  formatError: (error) => {
+    console.log(error);
+    return error;
+  },
 });
 
 export type ApolloContext = {
   db: PrismaClient;
   reqUser?: User;
-  // session?: Express.Session;
   accessToken?: string;
   userEmail?: string;
 };

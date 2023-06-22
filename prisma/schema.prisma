@@ -11,41 +11,47 @@ generator client {
 }
 
 model User {
-  id                     String          @id @default(cuid())
-  email                  String          @unique
+  id                     String        @id @default(cuid())
+  email                  String        @unique
+  phoneNumber            String        @unique
   firstName              String
   lastName               String
   location               String
-  idealPlans             String
-  Event                  Event[]
+  bio           String              @default("")
+  events                  Event[]
   Response               Response[]
-  coverPhotoKey          String?
-  profilePhotoKey        String?
-  FriendRequestRequestor FriendRequest[] @relation("FriendRequestRequestor")
-  FriendRequestReceiver  FriendRequest[] @relation("FriendRequestReceiver")
+  coverPhoto          String?
+  profilePhoto        String?
+  sentFriendRequests     Friendship[]  @relation("senderRelation")
+  receivedFriendRequests Friendship[]  @relation("receiverRelation")
+  friends                UserFriends[]
+  friendsOf              UserFriends[] @relation("UserFriendsFriend")
 
   EventInviteInviter EventInvite[] @relation("EventInviteInviter")
   EventInviteInvitee EventInvite[] @relation("EventInviteInvitee")
-  friendships        Friendship[]
   comments           Comment[]
+  photos             Photo[]
+}
+
+model UserFriends {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  friendId  String
+  friend    User     @relation("UserFriendsFriend", fields: [friendId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Friendship {
-  id            String   @id @default(cuid())
-  friends       User[]
-  createdAt     DateTime @default(now())
-  mutualFriends Int      @default(1)
+  id         String   @id @default(cuid())
+  status     String
+  senderId   String
+  receiverId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-}
-
-model FriendRequest {
-  id          String   @id @default(cuid())
-  status      String
-  requestDate DateTime @default(now())
-  requestorId String
-  requestor   User     @relation("FriendRequestRequestor", fields: [requestorId], references: [id])
-  receiverId  String
-  receiver    User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
+  sender   User @relation("senderRelation", fields: [senderId], references: [id])
+  receiver User @relation("receiverRelation", fields: [receiverId], references: [id])
 }
 
 model Event {
@@ -53,16 +59,28 @@ model Event {
   userId      String
   user        User          @relation(fields: [userId], references: [id])
   location    String
+  category   String @default("Eating")
   title       String
   startDate   String
   endDate     String
   description String
   coverPhoto  String?
+  eventPhotos Photo[]
   privacy     String
   responses   Response[]
   EventInvite EventInvite[]
-  createdOn   DateTime      @default(now())
+  createdOn   String
   comments    Comment[]
+}
+
+model Photo {
+  id      String @id @default(cuid())
+  url     String
+  Event   Event  @relation(fields: [eventId], references: [id])
+  eventId String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  caption String
 }
 
 model Response {

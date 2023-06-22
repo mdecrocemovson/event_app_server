@@ -13,14 +13,17 @@ export const typeDefs = gql`
     userId: String
     location: String
     description: String
-    coverPhoto: Upload
+    category: String
+    coverPhoto: String
     startDate: String
     endDate: String
     title: String
     privacy: String
+    selectedFriends: [String]
   }
-  input EditEventInput {
-    eventId: String
+  input UpdateEventInput {
+    id: String
+    userId: String
     location: String
     description: String
     coverPhoto: String
@@ -28,26 +31,46 @@ export const typeDefs = gql`
     endDate: String
     title: String
     privacy: String
+    eventPhotos: [PhotoInput]
   }
-  input CreateUserInput {
+
+  input UpdateUserAttendanceInput {
+    userId: String
+    eventId: String
+    attendance: Int
+  }
+
+  input UserInput {
+    id: String
+  }
+  input PhotoInput {
+    id: String
+    url: String
+    user: UserInput
+    caption: String
+  }
+  input SignUpUserInput {
     coverPhoto: String
     profilePhoto: String
+    phoneNumber: String
     email: String
     firstName: String
     lastName: String
     location: String
-    idealPlans: String
+    bio: String
   }
 
-  input UpdateUserInput {
+  input EditUserInput {
     id: String!
     email: String
     firstName: String
     lastName: String
     location: String
-    idealPlans: String
+    bio: String
     profilePhoto: String
+    changedProfilePhoto: Boolean
     coverPhoto: String
+    changedCoverPhoto: Boolean
   }
   input FriendRequestInput {
     activeUserId: String
@@ -58,6 +81,9 @@ export const typeDefs = gql`
     inviterId: String
     eventId: String
     inviteeId: String
+  }
+  input TextInviteInput {
+    phoneNumber: String
   }
 
   input RespondToEventInviteInput {
@@ -79,11 +105,25 @@ export const typeDefs = gql`
     isCover: Boolean
   }
 
+  input EventByIdInput {
+    id: String!
+    activeUserId: String!
+  }
+
+  type Photo {
+    id: String
+    url: String
+    event: Event
+    user: User
+    caption: String
+  }
+
   type Event {
     id: String
     title: String
     location: String
     length: String
+    category: String
     description: String
     coverPhoto: String
     startDate: String
@@ -94,6 +134,7 @@ export const typeDefs = gql`
     responses: [Response]
     createdOn: String
     comments: [Comment]
+    eventPhotos: [Photo]
   }
 
   type Comment {
@@ -111,10 +152,21 @@ export const typeDefs = gql`
     firstName: String
     lastName: String
     location: String
-    idealPlans: String
+    phoneNumber: String
+    bio: String
     profilePhoto: String
     coverPhoto: String
     comments: [Comment]
+    friendships: [Friendship]
+    friends: [UserFriends]
+    isFriend: Boolean
+    events: [Event]
+  }
+
+  type UserFriends {
+    id: String
+    user: User
+    friend: User
   }
 
   type Response {
@@ -157,25 +209,29 @@ export const typeDefs = gql`
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
+    activeUser: User
     eventsByUserId(iduser: String): [Event]
     responsesByEventId(eventId: String): [Response]
     userByEmail(email: String): User
+    userByPhone(phoneNumber: String): User
     friendRequestsByUserId(activeUserId: String): [FriendRequest]
     friendshipsByUserId(userId: String): [Friendship]
     eventInvitesByInviteeId(userId: String): [EventInvite]
-    eventById(eventId: String): Event
+    eventById(input: EventByIdInput!): Event
   }
 
   type Mutation {
     createEvent(input: CreateEventInput!): Event
-    createUser(input: CreateUserInput!): User
-    editEvent(input: EditEventInput!): Event
+    signUpUser(input: SignUpUserInput!): User
+    updateEvent(input: UpdateEventInput!): Event
     confirmFriendRequest(input: FriendRequestInput): User
     addFriend(input: FriendRequestInput): FriendRequest
     inviteFriendToEvent(input: FriendInviteInput): EventInvite
     respondToEventInvite(input: RespondToEventInviteInput!): EventInvite
-    updateUser(input: UpdateUserInput): User
     addComment(input: AddCommentInput): Comment
     uploadUserPhoto(input: ProfilePictureUploadInput!): User
+    sendTextInvite(input: TextInviteInput): String
+    updateUserAttributes(input: EditUserInput): User
+    updateUserAttendance(input: UpdateUserAttendanceInput): Response
   }
 `;
