@@ -13,7 +13,3 @@ export const separateResponsesByCategory = (responses) => {
     notAttending,
   };
 };
-
-
-'Spaghetti Recipe Ingredients Spaghetti Marinara Sauce Salt Water Instructions Bring water to a boil. Add spaghetti to boiling water. Add salt to taste. Cook for 10 minutes, stirring occasionally. Add marinara sauce to a pan, bringing to a simmer. Mix cooked spaghetti with marinara sauce. Enjoy! Spaghetti Recipe Ingredients Spaghetti Marinara Sauce Salt Water Instructions Bring water to a boil. Add spaghetti to boiling water. Add salt to taste. Cook for 10 minutes, stirring occasionally. Add marinara sauce to a pan, bringing to a simmer. Mix cooked spaghetti with marinara sauce. Enjoy!'
-'Spaghetti Recipe Ingredients Spaghetti Marinara Sauce Salt Water Instructions Bring water to a boil. Add spaghetti to boiling water. Add salt to taste. Cook for 10 minutes, stirring occasionally. Add marinara sauce to a pan, bringing to a simmer. Mix cooked spaghetti with marinara sauce. Enjoy!'
